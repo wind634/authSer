@@ -1,4 +1,5 @@
 import requests
+from celery import Celery
 from flask import Flask, request
 from flask_redis import FlaskRedis
 
