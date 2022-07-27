@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import requests
 from celery import Celery
 from flask import Flask, request
@@ -10,11 +12,25 @@ app = Flask(__name__)
 
 redis_client.init_app(app)
 
+
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+app.config['CELERYBEAT_SCHEDULE'] = {
+        'refresh_token': {
+            'task': 'refresh_token',
+            'schedule': timedelta(seconds=300)
+        }
+}
+
 
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
+
+
+# 定时导入
+@celery.task(name="refresh_token")
+def refresh_token():
+    print("定时任务：每10秒执行一次")
 
 
 @app.route('/redirect_auth', methods=["GET"])
